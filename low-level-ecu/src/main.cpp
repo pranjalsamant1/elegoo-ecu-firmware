@@ -30,14 +30,11 @@ void setup() {
 }
 
 void loop() {
-    // Read ultrasonic + IR
     float dist = sensors.getDistance();
     bool cliff = sensors.cliffDetected();
 
-    // Read IMU raw data
     imu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
 
-    // Print everything on one line
     Serial.print(dist);        Serial.print(" cm | ");
     Serial.print(sensors.irLeft());   Serial.print(" ");
     Serial.print(sensors.irMiddle()); Serial.print(" ");
@@ -50,5 +47,5 @@ void loop() {
     Serial.print(gy); Serial.print(" ");
     Serial.println(gz);
 
-    delay(100); // 10Hz for now
+    delay(100);
 }

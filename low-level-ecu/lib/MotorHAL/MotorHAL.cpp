@@ -1,32 +1,33 @@
 #include "MotorHAL.h"
 
 void MotorHAL::init() {
-    pinMode(MOTOR_LEFT_PWM,  OUTPUT);
-    pinMode(MOTOR_LEFT_IN1,  OUTPUT);
-    pinMode(MOTOR_LEFT_IN2,  OUTPUT);
-    pinMode(MOTOR_RIGHT_PWM, OUTPUT);
-    pinMode(MOTOR_RIGHT_IN1, OUTPUT);
-    pinMode(MOTOR_RIGHT_IN2, OUTPUT);
+    pinMode(MOTOR_LEFT_A,  OUTPUT);
+    pinMode(MOTOR_LEFT_B,  OUTPUT);
+    pinMode(MOTOR_RIGHT_A, OUTPUT);
+    pinMode(MOTOR_RIGHT_B, OUTPUT);
     stop();
 }
 
-void MotorHAL::_setMotor(int pwmPin, int in1, int in2, int speed) {
+// DRV8835 in IN/IN mode:
+// Speed > 0: A=PWM, B=0 (forward)
+// Speed < 0: A=0, B=PWM (backward)
+// Speed = 0: A=0, B=0 (coast)
+void MotorHAL::_setMotor(int pinA, int pinB, int speed) {
     speed = constrain(speed, -255, 255);
     if (speed > 0) {
-        digitalWrite(in1, HIGH);
-        digitalWrite(in2, LOW);
+        analogWrite(pinA, speed);
+        analogWrite(pinB, 0);
     } else if (speed < 0) {
-        digitalWrite(in1, LOW);
-        digitalWrite(in2, HIGH);
+        analogWrite(pinA, 0);
+        analogWrite(pinB, -speed);
     } else {
-        digitalWrite(in1, LOW);
-        digitalWrite(in2, LOW);
+        analogWrite(pinA, 0);
+        analogWrite(pinB, 0);
     }
-    analogWrite(pwmPin, abs(speed));
 }
 
-void MotorHAL::setLeft(int speed)   { _setMotor(MOTOR_LEFT_PWM,  MOTOR_LEFT_IN1,  MOTOR_LEFT_IN2,  speed); }
-void MotorHAL::setRight(int speed)  { _setMotor(MOTOR_RIGHT_PWM, MOTOR_RIGHT_IN1, MOTOR_RIGHT_IN2, speed); }
+void MotorHAL::setLeft(int speed)   { _setMotor(MOTOR_LEFT_A,  MOTOR_LEFT_B,  speed); }
+void MotorHAL::setRight(int speed)  { _setMotor(MOTOR_RIGHT_A, MOTOR_RIGHT_B, speed); }
 void MotorHAL::stop()               { setLeft(0); setRight(0); }
 void MotorHAL::forward(int speed)   { setLeft(speed);  setRight(speed); }
 void MotorHAL::backward(int speed)  { setLeft(-speed); setRight(-speed); }

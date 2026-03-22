@@ -3,13 +3,15 @@
 
 #include <Arduino.h>
 
-// Elegoo V4.0 TB6612 motor driver pin definitions
-#define MOTOR_LEFT_PWM    5
-#define MOTOR_LEFT_IN1    7
-#define MOTOR_LEFT_IN2    8
-#define MOTOR_RIGHT_PWM   6
-#define MOTOR_RIGHT_IN1   9
-#define MOTOR_RIGHT_IN2  10
+// === PINS FROM ELEGOO V4.0 SCHEMATIC (DRV8835) ===
+// DRV8835: AO1/AO2 = Left motor, BO1/BO2 = Right motor
+// AOUT1 = pin 9, AOUT2 = pin 6 (via AIN1/AIN2 PWM)
+// BOUT1 = pin 10, BOUT2 = pin 5
+
+#define MOTOR_LEFT_A    9    // Left motor PWM A
+#define MOTOR_LEFT_B    6    // Left motor PWM B
+#define MOTOR_RIGHT_A   10   // Right motor PWM A
+#define MOTOR_RIGHT_B   5    // Right motor PWM B
 
 class MotorHAL {
 public:
@@ -23,7 +25,7 @@ public:
     void turnRight(int speed);
 
 private:
-    void _setMotor(int pwmPin, int in1, int in2, int speed);
+    void _setMotor(int pinA, int pinB, int speed);
 };
 
 #endif

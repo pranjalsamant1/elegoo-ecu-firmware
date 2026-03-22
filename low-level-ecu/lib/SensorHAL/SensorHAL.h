@@ -3,38 +3,24 @@
 
 #include <Arduino.h>
 
-// Ultrasonic sensor pins — Elegoo V4.0
-#define TRIG_PIN  A0
-#define ECHO_PIN   2   // Must be interrupt-capable pin
+// === PINS FROM ELEGOO V4.0 SCHEMATIC ===
+// Ultrasonic (P9 header)
+#define TRIG_PIN  13
+#define ECHO_PIN  12   // NOT interrupt-capable on UNO — uses pulseIn
 
-// IR line tracking sensor pins
+// IR line tracking (P7 header)
 #define IR_LEFT    A2
 #define IR_MIDDLE  A1
-#define IR_RIGHT   A3
-
-// MPU6050 uses I2C — pins A4 (SDA) and A5 (SCL) — no defines needed
+#define IR_RIGHT   A0
 
 class SensorHAL {
 public:
     void init();
-
-    // Ultrasonic
-    float getDistance();        // Returns distance in cm
-
-    // IR line sensors
-    bool irLeft();              // true = dark surface detected
+    float getDistance();    // Returns cm, -1 on timeout
+    bool irLeft();          // true = dark surface detected
     bool irMiddle();
     bool irRight();
-    bool cliffDetected();       // true = all 3 sensors see drop
-
-    // Raw analog reads (for debugging)
-    int irLeftRaw()   { return analogRead(IR_LEFT);   }
-    int irMiddleRaw() { return analogRead(IR_MIDDLE); }
-    int irRightRaw()  { return analogRead(IR_RIGHT);  }
-
-private:
-    static volatile long _echoDuration;
-    static void _echoISR();     // Interrupt service routine
+    bool cliffDetected();   // true = all 3 sensors see cliff/drop
 };
 
 #endif

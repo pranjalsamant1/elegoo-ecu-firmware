@@ -1,24 +1,12 @@
 #include "SensorHAL.h"
 
-// Static member definitions
-volatile long SensorHAL::_echoDuration = 0;
-
-void SensorHAL::_echoISR() {
-    static unsigned long startTime = 0;
-    if (digitalRead(ECHO_PIN) == HIGH) {
-        startTime = micros();
-    } else {
-        _echoDuration = micros() - startTime;
-    }
-}
-
 void SensorHAL::init() {
     // Ultrasonic
     pinMode(TRIG_PIN, OUTPUT);
     pinMode(ECHO_PIN, INPUT);
-    attachInterrupt(digitalPinToInterrupt(ECHO_PIN), _echoISR, CHANGE);
+    digitalWrite(TRIG_PIN, LOW);
 
-    // IR sensors
+    // IR line tracking
     pinMode(IR_LEFT,   INPUT);
     pinMode(IR_MIDDLE, INPUT);
     pinMode(IR_RIGHT,  INPUT);
@@ -32,20 +20,22 @@ float SensorHAL::getDistance() {
     delayMicroseconds(10);
     digitalWrite(TRIG_PIN, LOW);
 
-    // Wait for echo (max 30ms timeout)
-    unsigned long timeout = millis();
-    while (_echoDuration == 0 && millis() - timeout < 30);
-
-    float distance = (_echoDuration * 0.0343f) / 2.0f;
-    _echoDuration = 0;
-    return distance;
+    // pulseIn blocks but echo pin 12 is not interrupt-capable on UNO
+    long duration = pulseIn(ECHO_PIN, HIGH, 30000);
+    if (duration == 0) return -1.0f;
+    return (duration * 0.0343f) / 2.0f;
 }
 
+// From schematic: IR sensors on P7 — A2=Left, A1=Middle, A0=Right
+// HIGH = no surface / light surface
+// LOW  = dark surface / line detected
 bool SensorHAL::irLeft()   { return digitalRead(IR_LEFT)   == LOW; }
 bool SensorHAL::irMiddle() { return digitalRead(IR_MIDDLE) == LOW; }
 bool SensorHAL::irRight()  { return digitalRead(IR_RIGHT)  == LOW; }
 
+// Cliff = all sensors read HIGH (no dark surface under any sensor)
 bool SensorHAL::cliffDetected() {
-    // All 3 sensors see no surface = cliff
-    return !irLeft() && !irMiddle() && !irRight();
+    return (digitalRead(IR_LEFT)   == HIGH) &&
+           (digitalRead(IR_MIDDLE) == HIGH) &&
+           (digitalRead(IR_RIGHT)  == HIGH);
 }
